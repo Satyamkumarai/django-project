@@ -1,0 +1,13 @@
+<!--
+    This Is the line which is used to specify that this template page inherits from the "base..html"
+    Notice that the path is relative to the "templates" folder
+-->
+{% extends "blog/base.html" %}
+
+
+<!-- 
+    This is the block that is over written by this child template
+ -->
+{% block content %}
+    <h1>Hello {{ user.username }}!</h1>
+{% endblock content %}

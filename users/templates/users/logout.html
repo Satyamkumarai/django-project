@@ -1,0 +1,14 @@
+<!-- We can access this even from here -->
+<!-- since it is a template it searches by default in the template dir -->
+{% extends "blog/base.html" %}
+<!-- Our block  -->
+{% block content %}
+    <h2 >You Have Been Logged Out</h2>
+    <div class="border-top pt-3">
+        <small class="text-muted">
+             <a href="{% url 'login' %}" >Log in again</a>
+        </small>
+    </div>
+
+
+{% endblock content %}

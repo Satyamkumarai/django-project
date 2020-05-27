@@ -1,0 +1,23 @@
+<!--
+    This Is the line which is used to specify that this template page inherits from the "base..html"
+    Notice that the path is relative to the "templates" folder
+-->
+{% extends "blog/base.html" %}
+
+<!-- 
+    This is the block that is over written by this child template
+ -->
+{% block content %}
+    {% for post in posts %}
+        <article class="media content-section">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <a class="mr-2" href="#">{{ post.author }}</a>
+                    <small class="text-muted">{{ post.date_posted|date:"M d, Y" }}</small>
+                </div>
+                <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
+                <p class="article-content">{{ post.content }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

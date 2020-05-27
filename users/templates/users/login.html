@@ -1,0 +1,42 @@
+<!-- We can access this even from here -->
+<!-- since it is a template it searches by default in the template dir -->
+{% extends "blog/base.html" %}
+<!-- Loading our crispy forms tags to be able to use them in this template -->
+{% load crispy_forms_tags %}
+<!-- Our block  -->
+{% block content %}
+    <div class = "content-section">
+        <form method="POST">
+            <!-- csrf_token -->
+            {% csrf_token %}
+            <!-- Now the fieldset to group the elements together -->
+            <fieldset class="form-group">
+                <legend class = "border-bottom mb-4">Login</legend>
+                {{ form|crispy }}
+            </fieldset>
+            <div class="form-group">
+                <button type="submit" class="btn btn-outline-info">
+                    Login
+                </button>
+            </div>
+        </form>
+        <div class="border-top pt-3">
+            <small class="text-muted" >
+                Need An account? <a href="{% url 'register' %}" class="ml-2">Sign Up</a>
+            </small>
+        </div>
+    </div>
+    
+{% endblock content %}
+
+
+
+
+
+
+
+
+
+
+
+
