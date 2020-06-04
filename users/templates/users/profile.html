@@ -9,5 +9,17 @@
     This is the block that is over written by this child template
  -->
 {% block content %}
-    <h1>Hello {{ user.username }}!</h1>
+    <!-- main content section -->
+    <div class = "content-section">
+        <!-- media class  -->
+        <div class="media">
+            <!-- profile pic  -->
+            <img class="rounded-circle account-img" src= "{{ user.profile.image.url }}">
+            <div class="media-body">
+                <h2 class = "account-heading">{{ user.username }}</h2>
+                <p class = "d-inline-block text-truncate">{{ user.email }}</p>
+            </div>
+        </div>
+
+    </div>
 {% endblock content %}

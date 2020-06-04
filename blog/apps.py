@@ -5,3 +5,8 @@ from django.apps import AppConfig
 #as blog.apps.BlogConfig <app-name>.apps.<class-name>
 class BlogConfig(AppConfig):    
     name = 'blog'
+    
+    #connecting the signals..
+    def ready(self):
+        import users.signals
+

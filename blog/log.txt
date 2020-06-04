@@ -20,19 +20,18 @@ Note For using this file:
     3. Now to add the route this will be managed by the blog/urls.py 
 
 
-# created <blog/urls.py>   -->this is where we will manage the urls within that app
-
-in <blog/urls.py>
-    1. imported `path` from `django.urls`
-    2.  imported the `views` in to this file
-    3. added a new $urlpatterns list with 1st element as path("",views.home,name = "blog-home")
+created <blog/urls.py>   -->this is where we will manage the urls within that app
+    in <blog/urls.py>
+        1. imported `path` from `django.urls`
+        2.  imported the `views` in to this file
+        3. added a new $urlpatterns list with 1st element as path("",views.home,name = "blog-home")
 
 Now to specify which urls will route to our app "blog" 
-This is done in the main urls file..
-in <urls.py>
-    1. imported `include` from `django.urls`
-    2. added path("blog/",include("blog.urls"))  #when the url countains blog/ use the urls defined in blog/urls.py to further 
-            route to the correct dest..
+    This is done in the main urls file..
+    in <urls.py>
+        1. imported `include` from `django.urls`
+        2. added path("blog/",include("blog.urls"))  #when the url countains blog/ use the urls defined in blog/urls.py to further 
+                route to the correct dest..
 
 in<blog/urls.py and blog/view.py>
     1. added the about option.
@@ -65,13 +64,13 @@ Including the App Config
             1. append `'blog.apps.BlogConfig'` in the $INSTALLED_APPS varible
             Here blog->appname ,apps -> "apps.py" ,BlogConfig ->class Name within "apps.py"
 
-rendering Templates 
+Rendering Templates 
     Now To render the templates in `views` from "blog/templates/<templatefile>"
     in <blog/views>
         1. redefine `home` function to return `render(request,"path-to-templatefile",< Any additional data to be used(See sending data in templates) >)
         2. similarly redefine the `about`
 
-Passing Data to templated to be Rendered
+Passing Data to template to be Rendered
     Now Suppose you have a data (see an example below)
     To pass it in the template just pass it as a dict into `render()`
     in <blog/views>
@@ -119,7 +118,6 @@ A Note on Template Inheritance:
                                         #block content 
                                       {% endblock %} `
             
-
 Note on Database :
     1. ORM object relational Mapper
     2. using sqllite for development
@@ -163,6 +161,7 @@ Creating a database:
         
         To Apply Our migrations:
             `py migrate.py migrate`
+
 Database Querying:
     ``` from blog.models import Post                                                                    # importing the Post Table
         from django.contrib.auth.models import User                                                     #importing the User Table
@@ -184,69 +183,67 @@ Fetching the data from the DB:
             Docs : https://docs.djangoproject.com/en/2.0/ref/templates/builtins/#date
 
 
-Creating a User Registration form:
-Using a new app names "users"
+Creating a User Registration form Using a new app names "users"
+    Creating the `users` app and including it's config 
+        1. `py manage.py startapp users`
 
-    1. py manage.py startapp users
-
-    2. <in settings.py>:
-            register our users app by adding `'users.apps.UserConfig'` to $INSTALLED_APPS
+        2. <in settings.py>:
+                register our users app by adding `'users.apps.UserConfig'` to $INSTALLED_APPS
 
     Django has  a users creation form in the form of a class
-
-    3. <in users/views.py>
-        1. add `from django.contrib.auth.forms import UserCreationForm`
-        2. Add the register function that will handle the register request..
-        in register function
-            1. set `form = UserCreationForm`
-            2. `return render(req,"users/register.html",{"form":form})`
+    Creating the Userapp views to render the  Template used for registration
+        1. <in users/views.py>
+            1. add `from django.contrib.auth.forms import UserCreationForm`
+            2. Add the register function that will handle the register request..
+            in register function
+                1. set `form = UserCreationForm`
+                2. `return render(req,"users/register.html",{"form":form})`
 
         
 
     Now TO create the template for Registration..
-
-    <in "users/template/users/register.html">
-        1.  inherit from the "blog/base.html" using `{% extends "blog/base.html" %}`
-        2.  create the block content.
-            1. within the block content Create a div with `class = "content-section"`
-                1. within the div create a `form` tag.. with `method="POST"`
-                
-                    we need to add a csrf_tokens cross-site-forgery-token for added security this is *required
-                    1. csrf_token : `{% csrf_token %}
-
-                    To group related elements we add a `fieldset` tag..
-
-                    2. <fieldset class = "form-group"  
-
-                        And a Legend to the form with a `border-bottom mb-4` bootstrap class
-
-                        1. `<legend class = "border-bottom mb-4`>Join Today</legend>` 
-
-                        Now the form.
-
-                        2. `{{ form.as_p }}` to add the contents of the entire form in paragrah tag
+        <in "users/template/users/register.html">
+            1.  inherit from the "blog/base.html" using `{% extends "blog/base.html" %}`
+            2.  create the block content.
+                1. within the block content Create a div with `class = "content-section"`
+                    1. within the div create a `form` tag.. with `method="POST"`
                     
-                    Now need to add the submit button.. 
-                    This will be in a `div` with the `class="from-group"`
-                    
-                    3. `<div class = "form-group"> `
-                        Now The Button.. with `type= "submit"` and bootstrap `class = "btn btn-outline-info"`
+                        we need to add a csrf_tokens cross-site-forgery-token for added security this is *required
+                        1. csrf_token : `{% csrf_token %}
 
-                        `<button class = "btn btn-outline-info" type = "submit" >Sign Up</button>
-            2. Create a signin message using
-                1. a `div` with bootstrap `class = "border-top pt3"`
-                    1. within it a  `small` tag.. with `class="text-muted`  -> "Already have an account?"
-                    2. along with `a` tag `<a href =  "ml-2" href = "#"> Sign In</a>
+                        To group related elements we add a `fieldset` tag..
 
-    Now To add the Urls But directly to the project 
+                        2. <fieldset class = "form-group"  
+
+                            And a Legend to the form with a `border-bottom mb-4` bootstrap class
+
+                            1. `<legend class = "border-bottom mb-4`>Join Today</legend>` 
+
+                            Now the form.
+
+                            2. `{{ form.as_p }}` to add the contents of the entire form in paragrah tag
+                        
+                        Now need to add the submit button.. 
+                        This will be in a `div` with the `class="from-group"`
+                        
+                        3. `<div class = "form-group"> `
+                            Now The Button.. with `type= "submit"` and bootstrap `class = "btn btn-outline-info"`
+
+                            `<button class = "btn btn-outline-info" type = "submit" >Sign Up</button>
+                2. Create a signin message using
+                    1. a `div` with bootstrap `class = "border-top pt3"`
+                        1. within it a  `small` tag.. with `class="text-muted`  -> "Already have an account?"
+                        2. along with `a` tag `<a href =  "ml-2" href = "#"> Sign In</a>
+
+    Now To add the Urls for register But directly to the project Setting 
         <in urls.py>
             1. in $urlpatterns add `path("register/",users_views.register,name= "register")` #basically url:"register/" Req Handled by: users.views.register Name = "register"
 
-    Now to enable our register method to  validate the enter data and redirect if it is correct
-        So when the user submits the data ..  byt default the POST is done to the same url..
+    Now to enable our register method to  validate the entered data and redirect if it is correct
+        So when the user submits the data ..  by default the POST is done to the same url..
         So we have request.method = 'POST'
         `request.post` contains the posted data..
-        this is passed to a new user creation form
+        This is passed to a new user creation form
         This `$form` object has a method `is_valid()` that checks the form for errors
         <in users/views.py>
             1. `from django.shortcuts import redirect`
@@ -264,10 +261,10 @@ Using a new app names "users"
                 return render(request,"users/register.html",{"form":form})
                ```
 
-    Now to enable the template (in the base template) to display messages: 
+    Now to enable the template (in the base template) to display flash messages: 
         <in blog/temlate/blog/base.html>
             
-            we'll add this just above the content block..
+            We'll add this just above the content block..
 
             bootstrap has a alert class `class = "alert alert-<alert-type>"
             The $message in each $messages  has a `.tag` that specifies the type of the message passed
@@ -287,8 +284,9 @@ Using a new app names "users"
 
                 {% endif %}
             ```
-            
-    Now  TO BE able to change the contents of the default `user creation form` that django provides we have to create a new class
+
+    Extending the user model to be able to Add Profile pics..    
+        Now  TO BE able to change the contents of the default `user creation form` that django provides we have to create a new class
         1. Create `users/forms.py`
         <in users/froms.py>
             1.  ```
@@ -415,11 +413,146 @@ Using a new app names "users"
                         1. add $LOGIN_URL and set is to  `'login'`
     Enabling the user to edit their profiles:
 
+        1. Now we need to extend the User model
+            Basically We'll create a new class that inherits the `models` class and has one to one correspondance with the `User` class
+            Models that have one-to-one correspondance with other models will have fields with same name as the other pointing to that other model
+            Meaning User <-> Profile  => <User>.profile points to the profile Model linked to User and  <Profile>.user  to the User..
+            Notice that the field names start with small letter "<User>.profile"(correct) instead of "<User>.Profile" (incorrect)
+
+            <in users/models.py>
+                1. `from django.db import models`   # our Class will inherit the `models.Model` class
+                2. `from django.contrib.auth.models import User`
+                3. Create a class named    `Profile` ..
+                    ```
+                    Class Profile (models.Model):
+                        user = models.OneToOneField(User,on_delete=models.CASCADE)                              ##Creting a one to one relationship to the User
+                        image = models.ImageField(default = "default.jpg",upload_to = 'profile_pics')           ##An Image field with default = default.jpg and upload_to = <folderName>
+
+                    def __str__(self):  #this will be used to display the class as str with proper info
+                        return f'{self.user.username} Profile`'
+                    ```
+                    Here `user` is our one-to-one field that maps to User model and when it(`User`) is deleted the `Profile` is also deleted 
+
+        2. Now to make changes to the db by running migrations 
+            1. `py manage.py makemigrations`  to make th e migrations 
+            2. `py manage.py migrate ` to run the migrations (actually update the database)
+
+        3. Register this `Profile` models to the adminPage
+            <in users/admin.py>
+                ```
+                    from .models import Profile
+                    admin.site.register(Profile)
+                ```
+        4. Additional Info.
+            4a. Adding new profiles from the admin page (Optional)
+                1. Run the dev server and then go to "localHost:8000/admin" signIn with your admin account
+                2. Click the profiles tab > ADD PROFILE 
+                3. Add some image to your admin User
+                4. Create a new Profile for another user and saveit without a profile pic (testing default.jpg)
+            
+            4b. Running the shell to learn a few things about the Profile
+                1. Run the shell `py manage.py shell`
+                2. import the `User` and `Profile`  classes
+                3. create a $user = User.objects.first() 
+                4. You'll find that since it is a one-to-one correspondance between a User and Profile,
+                    You will be able to access the profile of the user by  `user.profile` (Notice the small 'p' in profile)  
+                5. You can access the image by `user.profile.image` and this will return a `ImageFieldFile` object
+                6. The default image Directory is the `"<appname>/<upload_to dir>/"`
+                7. For duplicate images django automatically addson a hash value at the end..
+            5. Changing the location awhere the images are saved
+                <in setting.py>
+                    Django users the $MEDIA_ROOT to get the root directory for media files and $MEDIA_URL to 
+                    1. `MEDIA_ROOT = os.path.join(BASE_DIR,'media')` #this is the root where profile pcs are located..
+ 
+                    2. `MEDIA_URL = "/media/"`                          #public url for the images..
+        Viewing the profile and profile pics..
+            <in users/templates/users/profile.html>
+                1. add the `div` with `class = content-section`
+                    add the `div` with `class = "media"`
+                        add `img` with `class = "rounded-circle account-img"`  This class is a bootstrap class (as you can probably tell)
+                        add `h2` with `class ="account-heading"` 
+                        add `p` with `class = "text-secondary"`  This is also a bootstrap class..
+                    
+            Read the docs.. `"https://docs.djangoproject.com/en/3.0/howto/static-files/#serving-files-uploaded-by-a-user-during-development"`
+
+            Now to add the path to our media files So that wecan access them from the browser..
+                Here since we are still in dev mode. we can use the things as pointed out by above url..
+                    <in urls.py>
+                        ```
+                            from django.conf.urls.static import static                             #This is to serve the static files in dev mode.. 
+                            from django.conf import settings                                       #This is just importing the setting.py
+
+                            #this is the way to serve static files in dev mode..only and thus the if block..
+                            if settings.DEBUG:
+                                urlpatterns +=  static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
+
+                        ```
+                        Description:
+                            1. import `static` from `django.conf.urls.static` This will be used to serve static files but only in dev mode (mapping static files urls to their location)
+                            2. import `settings` This is the config in `settings.py`
+                            
+Django signals...
+    
+    Docs: https://docs.djangoproject.com/en/3.0/topics/signals/
+
+    Django signals are a sent by "senders" to notify "recievers" that a certain "action" has taken place
+    Eg. 1. pre_save                                 -> called before model is saved         
+        2. post_save                                -> called after  model is saved     
+        3. request_started and request_finished     -> Sent when Django starts or finishes an HTTP request.
+        4. pre_delete                               -> called  before a model is  deleted    
+        5. post_delete                              -> called after a model is  deleted    
+        6. m2m_changed etc..                        -> called after a ManyToManyField in a model is changed..  
+    Recievers..
+        To "listen" to signals we need recievers..
+        recievers are functions or method that are "connected" to a signal and are called once they recieve the signal..
+        Two ways to connect reciever functions/methods to signals..
+            1. `Signal.connect()`
+                <signalName>.connect(<callbackFunction>)
+            2. `reciever` Decorator
+                receiver(signal)[source]
+                Eg.:A reciever function `save_profile` connected to a signal `post_save` that emanates from source `User`
+                    ```
+                        @receiver(post_save,sender=User)
+                        def save_profile(sender,instance,**kwargs):
+                            instance.profile.save()
+                    ```
+Automating the profile Creation and Saving using Signals..
+    Create a new file in `users` app root dir  called `signals.py`       
+        <in users/signals.py>
+            1. import the `post_save` signal from `django.db.models.signals`
+            2. import the `reciever` decorator form `django.dispatch`  .This is also where `Signal` class is located
+            3. import the `User` model for the `django.contrib.auth.models`
+            4. import the `Profile` model from `.models`
+            5. Create a `create_profile` reciever function decorated by the `reciever` decorator.
+                ```
+                    #when a signal is fired the appropriate data is passed as keywordArgs to the reciever functions (see docs )
+                    @reciever(post_save,sender=User)                                    #We are connecting the post_save signal to Sender ->User
+                    def create_profile(sender,instance ,created,**kwargs):              #When the signal is fired ,the create_profile method is invoked..
+                        if created :
+                            Profile.objects.create(user = instance)                     #Create a new profile with `{user:<instance of the User>  image:"default.jpg" }`  
+                ```
+            6. We'll also create a `save_profile` reciever function
+                ```
+                    @receiver(post_save,sender=User)
+                    def save_profile(sender,instance,**kwargs):
+                        instance.profile.save()
+                ```
+    
+    When using the `reciever` decorator the signals are  actually connected in the `ready` method of the `<app>Config class` in `"<appName>/apps.py"` file
+
+    Connecting the recievers in `ready` method:
+        <in users/apps.py>
+            1. Create  a new Method ready:
+                ```
+                    def ready(self):
+                        import users.signals
+                ```
+
         
 
 
 # Bonus : Creating a remote github repo using github-api
-    1. to create a github remote repo use `curl -u "<username>" https://api.github.com/user/repos/ -d '{"name" = "<project-name>",<Other optional params>}'
+    1. to create a github remote repo use `curl -u "<username>:pass" https://api.github.com/user/repos/ -d '{"name" = "<project-name>",<Other optional params>}'
 
 
 

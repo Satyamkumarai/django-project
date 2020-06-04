@@ -18,6 +18,8 @@ from django.urls import path,include                                   #need inc
 from django.contrib.auth import views as auth_views                    #This is where the login and logout views are situated..
 from users import views as users_views
 
+from django.conf.urls.static import static                             #This is to serve the static files in dev mode.. 
+from django.conf import settings                                       #This is just importing the setting.py
 
 #this is the main urls file 
 #this helps to redirct to different apps 
@@ -46,4 +48,10 @@ urlpatterns = [
 
     #logout
     path("logout/",auth_views.LogoutView.as_view(template_name = "users/logout.html"),name = "logout" )
+
+
 ]
+
+#this is the way to serve static files in dev mode..only and thus the if block..
+if settings.DEBUG:
+    urlpatterns +=  static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # document_root is used to specify the root of the media files

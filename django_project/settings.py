@@ -25,7 +25,7 @@ SECRET_KEY = 'zbqn04+^wo0qlpl*10txfmh!v^%qhq@5u985(9m7#004j2h_pt'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.43.74"]
+ALLOWED_HOSTS = ["LocalHost","192.168.43.74"]
 
 
 # Application definition
@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles',   #this is added bydefault and is used to get static files
 ]
 
 MIDDLEWARE = [
@@ -121,6 +121,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR,'media') #this is the root where profile pcs are located..
+ 
+MEDIA_URL = "/media/"                          #public url for the media files..
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"     # by default it uses bootstrap2 
 
