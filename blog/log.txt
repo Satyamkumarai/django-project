@@ -40,9 +40,9 @@ in<blog/urls.py and blog/view.py>
 Creating Admin/Users:
     first need to create a database for the project
     (more in database migrations )
-    `py manage.py makemigrations`  -> detects changes and prepares django to update the database
-    `py manage.py migrate`  ->creates the migrations?
-    `py manage.py createsuperuser` ->creates the superuser (prompts)
+        `py manage.py makemigrations`  -> detects changes and prepares django to update the database
+        `py manage.py migrate`  ->creates the migrations?
+        `py manage.py createsuperuser` ->creates the superuser (prompts)
     then you can go to the login page for the admin page
 
 
@@ -67,7 +67,7 @@ Including the App Config
 Rendering Templates 
     Now To render the templates in `views` from "blog/templates/<templatefile>"
     in <blog/views>
-        1. redefine `home` function to return `render(request,"path-to-templatefile",< Any additional data to be used(See sending data in templates) >)
+        1. redefine `home` function to return `render(request,"path-to-templatefile",< Any additional data to be used(Passing Data to template to be Rendered) >)
         2. similarly redefine the `about`
 
 Passing Data to template to be Rendered
@@ -82,7 +82,7 @@ Passing Data to template to be Rendered
         int <blog/template/blog/home.html,blog/template/blog/about.html>
             1. use for loops and if statements to write data to the template..
 
-Template Inheritance:
+Template Inheritance:(see "A Note on Template Inheritance")
     Instead of repeating code in templates just use template inheritance to make life easier    
     in <blog/template/blog>
         1. Create a "base.html" file 
@@ -162,7 +162,7 @@ Creating a database:
         To Apply Our migrations:
             `py migrate.py migrate`
 
-Database Querying:
+Note on Database Querying:
     ``` from blog.models import Post                                                                    # importing the Post Table
         from django.contrib.auth.models import User                                                     #importing the User Table
         firstUser = User.objects.get(id=1)                                                              #get(<attribute-name> = <attribute-val>)  -> querySet[]
@@ -184,14 +184,15 @@ Fetching the data from the DB:
 
 
 Creating a User Registration form Using a new app names "users"
-    Creating the `users` app and including it's config 
+    1. Creating the `users` app and including it's config 
         1. `py manage.py startapp users`
 
         2. <in settings.py>:
                 register our users app by adding `'users.apps.UserConfig'` to $INSTALLED_APPS
 
     Django has  a users creation form in the form of a class
-    Creating the Userapp views to render the  Template used for registration
+
+    2. Creating the Userapp views to render the  Template used for registration
         1. <in users/views.py>
             1. add `from django.contrib.auth.forms import UserCreationForm`
             2. Add the register function that will handle the register request..
@@ -201,7 +202,7 @@ Creating a User Registration form Using a new app names "users"
 
         
 
-    Now TO create the template for Registration..
+    3. Now TO create the template for Registration..
         <in "users/template/users/register.html">
             1.  inherit from the "blog/base.html" using `{% extends "blog/base.html" %}`
             2.  create the block content.
@@ -235,11 +236,11 @@ Creating a User Registration form Using a new app names "users"
                         1. within it a  `small` tag.. with `class="text-muted`  -> "Already have an account?"
                         2. along with `a` tag `<a href =  "ml-2" href = "#"> Sign In</a>
 
-    Now To add the Urls for register But directly to the project Setting 
+    4. Now To add the Urls for register But directly to the project Setting 
         <in urls.py>
             1. in $urlpatterns add `path("register/",users_views.register,name= "register")` #basically url:"register/" Req Handled by: users.views.register Name = "register"
 
-    Now to enable our register method to  validate the entered data and redirect if it is correct
+    5. Now to enable our register method to  validate the entered data and redirect if it is correct
         So when the user submits the data ..  by default the POST is done to the same url..
         So we have request.method = 'POST'
         `request.post` contains the posted data..
@@ -261,7 +262,7 @@ Creating a User Registration form Using a new app names "users"
                 return render(request,"users/register.html",{"form":form})
                ```
 
-    Now to enable the template (in the base template) to display flash messages: 
+    6. Now to enable the template (in the base template) to display flash messages: 
         <in blog/temlate/blog/base.html>
             
             We'll add this just above the content block..
@@ -285,7 +286,7 @@ Creating a User Registration form Using a new app names "users"
                 {% endif %}
             ```
 
-    Extending the user model to be able to Add Profile pics..    
+    7. Extending the user model to be able to Add Profile pics..    
         Now  TO BE able to change the contents of the default `user creation form` that django provides we have to create a new class
         1. Create `users/forms.py`
         <in users/froms.py>
@@ -310,7 +311,8 @@ Creating a User Registration form Using a new app names "users"
             2. add `from .forms import UserRegistrationForm`
             3. replace all UserCreationForm with UserRegistrationForm
             
-    Making our forms "Crispy":
+Making our forms "Crispy":
+        crispy-forms are 3rd party lib that make   "crispy"forms (LOL)
         1. `pip install django-crispy-forms`
         
         <in setting.py>
@@ -411,9 +413,10 @@ Creating a User Registration form Using a new app names "users"
                 Now by default  the login url for django is "accounts/login"  to change this:
                     <in settings.py>
                         1. add $LOGIN_URL and set is to  `'login'`
-    Enabling the user to edit their profiles:
-
-        1. Now we need to extend the User model
+    
+Enabling the user to edit their profiles:
+    1. Creating the profile Model
+        1. We need to extend the User model
             Basically We'll create a new class that inherits the `models` class and has one to one correspondance with the `User` class
             Models that have one-to-one correspondance with other models will have fields with same name as the other pointing to that other model
             Meaning User <-> Profile  => <User>.profile points to the profile Model linked to User and  <Profile>.user  to the User..
@@ -443,6 +446,7 @@ Creating a User Registration form Using a new app names "users"
                     from .models import Profile
                     admin.site.register(Profile)
                 ```
+        
         4. Additional Info.
             4a. Adding new profiles from the admin page (Optional)
                 1. Run the dev server and then go to "localHost:8000/admin" signIn with your admin account
@@ -459,13 +463,16 @@ Creating a User Registration form Using a new app names "users"
                 5. You can access the image by `user.profile.image` and this will return a `ImageFieldFile` object
                 6. The default image Directory is the `"<appname>/<upload_to dir>/"`
                 7. For duplicate images django automatically addson a hash value at the end..
-            5. Changing the location awhere the images are saved
-                <in setting.py>
-                    Django users the $MEDIA_ROOT to get the root directory for media files and $MEDIA_URL to 
-                    1. `MEDIA_ROOT = os.path.join(BASE_DIR,'media')` #this is the root where profile pcs are located..
- 
-                    2. `MEDIA_URL = "/media/"`                          #public url for the images..
-        Viewing the profile and profile pics..
+        
+        5. Changing the location where the images are saved
+            <in setting.py>
+                Django users the $MEDIA_ROOT to get the root directory for media files and $MEDIA_URL to 
+                1. `MEDIA_ROOT = os.path.join(BASE_DIR,'media')` #this is the root where profile pcs are located..
+
+                2. `MEDIA_URL = "/media/"`                          #public url for the images..
+
+    2. Viewing the profile info and profile pics 
+        1. Rendering the profile and profile pic in the template
             <in users/templates/users/profile.html>
                 1. add the `div` with `class = content-section`
                     add the `div` with `class = "media"`
@@ -475,23 +482,61 @@ Creating a User Registration form Using a new app names "users"
                     
             Read the docs.. `"https://docs.djangoproject.com/en/3.0/howto/static-files/#serving-files-uploaded-by-a-user-during-development"`
 
+        2. serving static files
             Now to add the path to our media files So that wecan access them from the browser..
-                Here since we are still in dev mode. we can use the things as pointed out by above url..
-                    <in urls.py>
-                        ```
-                            from django.conf.urls.static import static                             #This is to serve the static files in dev mode.. 
-                            from django.conf import settings                                       #This is just importing the setting.py
+                    Here since we are still in dev mode. we can use the things as pointed out by above url..
+                        <in urls.py>
+                            ```
+                                from django.conf.urls.static import static                             #This is to serve the static files in dev mode.. 
+                                from django.conf import settings                                       #This is just importing the setting.py
 
-                            #this is the way to serve static files in dev mode..only and thus the if block..
-                            if settings.DEBUG:
-                                urlpatterns +=  static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
+                                #this is the way to serve static files in dev mode..only and thus the if block..
+                                if settings.DEBUG:
+                                    urlpatterns +=  static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
 
-                        ```
-                        Description:
-                            1. import `static` from `django.conf.urls.static` This will be used to serve static files but only in dev mode (mapping static files urls to their location)
-                            2. import `settings` This is the config in `settings.py`
-                            
-Django signals...
+                            ```
+                            Description:
+                                1. import `static` from `django.conf.urls.static` This will be used to serve static files but only in dev mode (mapping static files urls to their location)
+                                2. import `settings` This is the config in `settings.py`
+        
+    See "Note on Django signals"
+
+    3. Automating the profile Creation and Saving when a User is created using Signals..
+        Create a new file in `users` app root dir  called `signals.py`       
+            <in users/signals.py>
+                1. import the `post_save` signal from `django.db.models.signals`
+                2. import the `reciever` decorator form `django.dispatch`  .This is also where `Signal` class is located
+                3. import the `User` model for the `django.contrib.auth.models`
+                4. import the `Profile` model from `.models`
+                5. Create a `create_profile` reciever function decorated by the `reciever` decorator.
+                    ```
+                        #when a signal is fired the appropriate data is passed as keywordArgs to the reciever functions (see docs )
+                        @reciever(post_save,sender=User)                                    #We are connecting the post_save signal to Sender ->User
+                        def create_profile(sender,instance ,created,**kwargs):              #When the signal is fired ,the create_profile method is invoked..
+                            if created :
+                                Profile.objects.create(user = instance)                     #Create a new profile with `{user:<instance of the User>  image:"default.jpg" }`  
+                    ```
+                6. We'll also create a `save_profile` reciever function
+                    ```
+                        @receiver(post_save,sender=User)
+                        def save_profile(sender,instance,**kwargs):
+                            instance.profile.save()
+                    ```
+    
+        When using the `reciever` decorator the signals are  actually connected in the `ready` method of the `<app>Config class` in `"<appName>/apps.py"` file
+
+        Connecting the recievers in `ready` method:
+        <in users/apps.py>
+            1. Create  a new Method ready:
+                ```
+                    def ready(self):
+                        import users.signals
+                ```
+
+    4. Profile front-end :
+         
+
+Note on Django signals...
     
     Docs: https://docs.djangoproject.com/en/3.0/topics/signals/
 
@@ -509,46 +554,23 @@ Django signals...
             1. `Signal.connect()`
                 <signalName>.connect(<callbackFunction>)
             2. `reciever` Decorator
-                receiver(signal)[source]
+
+                `receiver(signal)[source]`
+
                 Eg.:A reciever function `save_profile` connected to a signal `post_save` that emanates from source `User`
                     ```
                         @receiver(post_save,sender=User)
                         def save_profile(sender,instance,**kwargs):
                             instance.profile.save()
                     ```
-Automating the profile Creation and Saving using Signals..
-    Create a new file in `users` app root dir  called `signals.py`       
-        <in users/signals.py>
-            1. import the `post_save` signal from `django.db.models.signals`
-            2. import the `reciever` decorator form `django.dispatch`  .This is also where `Signal` class is located
-            3. import the `User` model for the `django.contrib.auth.models`
-            4. import the `Profile` model from `.models`
-            5. Create a `create_profile` reciever function decorated by the `reciever` decorator.
-                ```
-                    #when a signal is fired the appropriate data is passed as keywordArgs to the reciever functions (see docs )
-                    @reciever(post_save,sender=User)                                    #We are connecting the post_save signal to Sender ->User
-                    def create_profile(sender,instance ,created,**kwargs):              #When the signal is fired ,the create_profile method is invoked..
-                        if created :
-                            Profile.objects.create(user = instance)                     #Create a new profile with `{user:<instance of the User>  image:"default.jpg" }`  
-                ```
-            6. We'll also create a `save_profile` reciever function
-                ```
-                    @receiver(post_save,sender=User)
-                    def save_profile(sender,instance,**kwargs):
-                        instance.profile.save()
-                ```
-    
-    When using the `reciever` decorator the signals are  actually connected in the `ready` method of the `<app>Config class` in `"<appName>/apps.py"` file
+                
+                Note while using the decorator method: 
+                    you must import the signals submodule under the `ready()` method of `<appName>Config` class located in the `"<appName>/apps.py"` file
 
-    Connecting the recievers in `ready` method:
-        <in users/apps.py>
-            1. Create  a new Method ready:
-                ```
-                    def ready(self):
-                        import users.signals
-                ```
 
-        
+
+
+
 
 
 # Bonus : Creating a remote github repo using github-api
@@ -556,33 +578,33 @@ Automating the profile Creation and Saving using Signals..
 
 
 
-///An example for data
-posts = [
+///An example for data (passing data to templates)
+    posts = [
 
-    {
+        {
 
-        'author': 'CoreyMS',
+            'author': 'CoreyMS',
 
-        'title': 'Blog Post 1',
+            'title': 'Blog Post 1',
 
-        'content': 'First post content',
+            'content': 'First post content',
 
-        'date_posted': 'August 27, 2018'
+            'date_posted': 'August 27, 2018'
 
-    },
+        },
 
-    {
+        {
 
-        'author': 'Jane Doe',
+            'author': 'Jane Doe',
 
-        'title': 'Blog Post 2',
+            'title': 'Blog Post 2',
 
-        'content': 'Second post content',
+            'content': 'Second post content',
 
-        'date_posted': 'August 28, 2018'
+            'date_posted': 'August 28, 2018'
 
-    }
-]
+        }
+    ]
 
 //Rules for working with Templates
     Rules:
@@ -620,7 +642,7 @@ Directory Structure :
     ├───.vscode                                                         #vscode config
     │
     └───django_project                                                  #main project dir 
-        │   db.sqlite3
+        │   db.sqlite3                                                      #The sqllite db file
         │   manage.py                                                       #this is what manages the enire project
         │
         ├───blog                                                        #The apps folder    
@@ -650,5 +672,71 @@ Directory Structure :
                 settings.py                                                         #settings for the entire project
                 urls.py                                                             #project urls redirects
                 wsgi.py                                                             #file to configure the wsgi server
-                __init__.py
-             
+                __init__.py            
+
+Directory Structure :
+    django_project:.                                                     #main project dir 
+    │       db.sqlite3
+    │       manage.py                                                       #this is what manages the enire project
+    │       README.md                                                       # readme File
+    │
+    ├───.vscode                                                          #vscode settings
+    │       settings.json
+    │
+    ├───blog                                                        #The blog app   
+    │   │   admin.py                                                     #this is where we register our models that our admin can change using the GUI
+    │   │   apps.py                                                      #The apps configurations file 
+    │   │   models.py                                                    #This is where we create our entities
+    │   │   tests.py                                                     
+    │   │   urls.py                                                      #The urls within the app are defined here 
+    │   │   views.py                                                     #This is where we render our templates
+    │   │   log.txt                                                      # THIS FILE
+    │   │   __init__.py
+    │   │
+    │   ├───migrations                                              # This is where the migrations are saved
+    │   │       0001_initial.py                                         This is this first saved migration
+    │   │       __init__.py
+    │   ├───static                                                  #The Static folder(For Js and Css)
+    │   │   └───blog                                                    #The App name
+    │   │           main.css                                                #The Css file for the app
+    │   │
+    │   ├───templates                                               #Templates Folder To store the templates
+    │       └───blog                                                    #The appname
+    │               about.html                                              #about.html for the "blog" app
+    │               base.html                                               #Base Template for "blog" app
+    │               home.html                                               #home.html for "blog" app
+    │
+    ├───django_project                                               #This is the folder where the project-wide settings are located
+    │       asgi.py 
+    │       settings.py                                                 #settings for the entire project
+    │       urls.py                                                     #project urls redirects
+    │       wsgi.py                                                     #file to configure the wsgi server
+    │       __init__.py            
+    │
+    ├───media                                                         #This is where the media files  are stored                                           
+    │   │   default.jpg                                                     #The default user profile pic
+    │   │
+    │   └───profile_pics                                                    #This where the profile pics of users are saved
+    │           WIN_20200312_19_07_41_Pro.jpg                                   #An example
+    │
+    └───users                                                          #The users app folder (handles the users and their profiles)
+        │   admin.py                                                        #this is where we register our models that our admin can change using the GUI (same as that of the blog app)
+        │   apps.py                                                         #The apps configurations file 
+        │   models.py                                                       #This is where we create our entities
+        │   tests.py                                                        
+        │   urls.py                                                         #The urls within the app are defined here 
+        │   views.py                                                        #This is where we render our templates        
+        │   forms.py                                                        #This is where the user creation form along with other forms is located 
+        │   signals.py                                                      #This is where the signal reciever functions that automate profile Creation are defined
+        │   __init__.py
+        │
+        ├───migrations                                                  #The migrations folder for the users app
+        │       0001_initial.py                                             #First migration for users app
+        │       __init__.py
+        │
+        ├───templates                                                   #This is where the templates for user and profile related templates are stored
+            └───users       
+                    login.html                                               #The Login Template (uses crispy forms)  
+                    logout.html                                              #The Logout template
+                    profile.html                                             #The Users Profile template 
+                    register.html                                            #The Users SignUP template (uses the Usercreation form located in users/forms.py)
