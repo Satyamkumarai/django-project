@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from PIL import Image                                                                      ##using the pillow lib to manipulate the images..
+
 #Extending the user model User model to be able to additional info
 
 class Profile(models.Model):
@@ -9,3 +11,12 @@ class Profile(models.Model):
 
     def __str__(self):
         return f'{self.user.username} Profile'
+
+    #overriding the save method to resize the images while being saved.
+    def save(self):
+        super().save()
+        img = Image.open(self.image.path)
+        if img.height>300 or img.width>300:
+            outputSize = (300,300)
+            img.thumbnail(outputSize)
+            img.save(self.image.path)

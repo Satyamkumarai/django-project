@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["LocalHost","192.168.43.74"]
 # Application definition
 
 INSTALLED_APPS = [
+    'django_cleanup',         # automaticaly manages the old files..
     'users.apps.UsersConfig', #updating the Installed apps to include the config for the usersRegistration
     'blog.apps.BlogConfig',
     'crispy_forms',           # using third party software in django to make interactions with templates easier

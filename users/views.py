@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 
 from django.contrib import messages  # to create the flash messages
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm
+from .forms import UserRegistrationForm,UserUpdateForm,ProfileUpdateForm
 
 # def register(request):                                              #this will handle the request..
 #     form = UserCreationForm()                                       #create a form..
@@ -16,7 +16,7 @@ def register(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            username = form.cleaned_data.get("username")           # a dict with data of the from..
+            # username = form.cleaned _data.get("username")           # a dict with data of the from..
             messages.success(request,f"Your account has been created You cannow Login!")
             #then redirect to login_page..
             return redirect('login')
@@ -29,7 +29,30 @@ def register(request):
 #this is a decorator to ensure that this function only gets called if the user has already logged in
 @login_required
 def profile(request):
-    return render(request,"users/profile.html")
+    if request.method == 'POST':
+        u_form = UserUpdateForm(request.POST,instance = request.user) #
+        p_form = ProfileUpdateForm(
+            request.POST,
+            request.FILES,
+            instance = request.user.profile)
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request,f"Your account has been Updated!")
+            return redirect('profile')
+    else:
+        u_form = UserUpdateForm(instance = request.user) #
+        p_form = ProfileUpdateForm(instance=  request.user.profile)
+    context = {                                                          #creating the context dict to pass in values to the template..
+        'u_form':u_form,
+        'p_form':p_form
+
+    }
+    return render(request,"users/profile.html",context)
+
+
+
+
 """
 types og message
 messages

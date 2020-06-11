@@ -533,8 +533,169 @@ Enabling the user to edit their profiles:
                         import users.signals
                 ```
 
-    4. Profile front-end :
-         
+    4. Enabling the users Profile editing from the profiles page :
+
+        1. Creating forms to update the `Profile` and the `User`
+            1. Create 2 forms `ProfileUpdateForm` and `UserUpdateForm` both inheriting the forms.ModelForm
+                1. for the `User`  model to edit  ["username","email"]
+                    <in forms.py>
+                        1. Create a  class `UserUpdateForm` inheriting the `forms.ModelForm`
+                        2. add the extra `$email` field to the form 
+                        3. Create the `Meta` class with `$model` set to User and `$fields` to `['username','email']`
+                        ```
+                            class UserUpdateForm(forms.ModelForm):
+                                email = forms.EmailField()                                        
+                                #The meta class
+                                class Meta:                     
+                                    model = User                                                    #The User model  will be affected 
+                                    fields = ['username','email']                                   #The fields and their orders
+
+                        ```
+
+                2. for the `Profile` model to edit ["image"] :
+                    <in forms.py>
+                        1. Create a  class `UserUpdateForm` inheriting the `forms.ModelForm`
+                        2. add the extra `$email` field to the form 
+                        3. Create the `Meta` class with `$model` set to User and `$fields` to `['username','email']`
+                        ```
+                            class ProfileUpdateForm(forms.ModelForm):
+                                #The meta class
+                                class Meta:                     
+                                    model = Profile                                                    #The User model  will be affected 
+                                    fields = ['image']                                   #The fields and their orders
+
+                        ```
+        2. Creating the views for our `UserUpdateForm` and the `ProfileUpdateForm`:
+            <in users/views.py>
+                <in the `profile`  function>
+                    1. `u_form = UserUpdateForm()`
+                    2  `p_form = ProfileUpdateForm()`
+                    3. `context = {'u_form':u_form,'p_form':p_form}`
+                    4. `return render(request,"users/profile.html",context)`
+        3. update the `profile.html`
+            <in 'users/templates/users/profile.html'>
+                1. add `{% load crispy_forms_tags %}` at the top
+                2. add the `users/templates/users/register.html` section (copy the)
+                    ```
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <!-- csrf_token -->
+                        {% csrf_token %}
+                        <!-- Now the fieldset to group the elements together -->
+                        <fieldset class="form-group">
+                            <legend class = "border-bottom mb-4">Profile Info</legend>
+                            {{ u_form|crispy }}
+                            {{ p_form|crispy }}
+
+                        </fieldset>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-outline-info">
+                                Update
+                            </button>
+                        </div>
+                    </form>
+                
+                Info :
+                    1. So basically we have the `form` tag with the `POST` method. we need the `enctype` to be `"multipart/form-data"` to be able to passs in images.
+                    2. The cross-site-forgery-token  `{% csrf_token %}`
+                    3. The `fieldset` tag that holds the main form..
+                        3a. The `legend` tag saying `"Profile Info"`
+                        3b. `{{ u_form|crispy }}` and `{{ p_form|crispy }}` ie. the Update forms (`User` and `Profile`) rendered with the crispy forms..
+                    4. The `div` tag containing our submit button
+
+                            
+                    ```
+        4. Updating the `profile` views to be able to update the fields
+            So if you run the dev server and go to the profile page.. you'll find that the fields are empty 
+            1. What we would ideally like is to be filled up with the default values..
+                To do this..   
+                    1. We just need to pass the `request.user` and the `request.user.profile` instance  to the update forms 
+                        The instance of the `User` will be available in the `$request` 
+                        
+                        1. `u_form = ProfileUpdateForm(instance =  request.user)`
+                        2. `p_form = ProfileUpdateForm(instance =  request.user.profile)`
+                    Info How does All this work.:
+                        1. Both `UserUpdateForm` and `ProfileUpdateForm` inherit `ModelForm` and thus are a type of ModelForm
+                        2. The ModelForms are displayed using `crispy_forms`.
+                        3. What `crispy_forms` does is to check the `$fields` of the forms and display them.. Or (Probably) All fields except mentioned in the `$exclude`
+                        4. When no instance of the `Model` is passed ,These fields are empty and when  we pass the instances of the Models the information is extracted from the `Model` instance is then displayed..
+                        
+                        Now the model associated with the `UserUpdateForm` is  `User` 
+            The forms data will be posted using the `POST` request
+            We need to be able to distinguish between the `GET`(while getting the profile ) vs `POST` (updating the profile.)
+            This is similar to what we did in the `register` view
+            2. To update the profile
+                Just change the profile view to this..
+                    ```
+                        @login_required                                                                              #to ensure login is required to view this profile
+                        def profile(request):                                                       
+                            if request.method == 'POST':                                                                                     
+                                u_form = UserUpdateForm(request.POST,instance = request.user) #
+                                p_form = ProfileUpdateForm(
+                                    request.POST,
+                                    request.FILES,
+                                    instance = request.user.profile)
+                                if u_form.is_valid() and p_form.is_valid():
+                                    u_form.save()
+                                    p_form.save()
+                                    messages.success(request,f"Your account has been Updated!")
+                                    return redirect('profile')
+                            else:
+                                u_form = UserUpdateForm(instance = request.user) #
+                                p_form = ProfileUpdateForm(instance=  request.user.profile)
+                            context = {                                                          #creating the context dict to pass in values to the template..
+                                'u_form':u_form,
+                                'p_form':p_form
+
+                            }
+                            return render(request,"users/profile.html",context)
+                    ```
+                Info:
+                    1. `@login_required` : decorator to ensure that the user is logged in to view the profile.. This automatically redirects the user to the login page..
+                    2. `if request.method == 'POST':` :  If a `POST` request is made: 
+                        1. `u_form = UserUpdateForm(request.POST,instance = request.user) ` : Create a `UserUpdateForm` passing in the `POST` data
+                        2. `p_form = ProfileUpdateForm(request.POST,request.FILES,instance = request.user.profile)` : Create a ProfileUpdateForm passing in the `POST` data and the `FILES` data and the `instance` of the `Profile`
+                                As you might have guessed we need to explicitly pass the files and the data an the instance of the model passed in the `POST` request to the `ModelForm` (here `ProfileUpdateForm`)
+                        3. if both the forms ar valid :
+                            1. Save both of them 
+                            2. Add a flash message to say it's been completed..
+                            3. redirect back to the same  `profile` page (`GET` request)
+                    3. else:
+                        simply create the two instances of the Update forms passing in the user and the profile instances..
+                    4. Create  a dict named `context` and pass in the two forms..
+                    5. Render the template `"users/templates/users/profile.html"`..
+            3. Resizing the profile pics:
+                We need to do this in the `users/models.py`
+                <in users/models.py>
+                    1. add `from PIL import Image` : Importing the Image 
+                    2. override the save method in Profile class
+                        ```
+                            def save(self):
+                                super().save()
+                                img = Image.open(self.image.path)
+                                if img.height>300 or img.width>300:
+                                    outputSize = (300,300)
+                                    img.thumbnail(outputSize)
+                                    img.save(self.image.path)
+                        ```
+                    Info:
+                        1. calling the super().save()  ~~//~~
+                        2. opening the image path is `self.image.path` 
+                        3. changing the image if it  is larger than 300px
+                        4. `img.thumbnail(size)` maintains the aspect ratio of the image..
+        5. managing the old image files..:
+            when you upload a new image the old one is still stored on the fs
+            To automatically delete it ..we'll use django-cleanup
+            1. `pip3 install django-cleanup`
+            2. add it under `$INSTALLED_APPS` in `settings.py` file
+    5. Displaying the images in the blog-home  
+        <in blog/templates/blog/home.html>
+            1. add  `<img class = "rounded-circle article-img" src="{{ post.author.profile.image.url}}">` just below the `article` tag        
+                    
+
+
+
+        
 
 Note on Django signals...
     

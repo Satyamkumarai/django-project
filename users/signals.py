@@ -1,5 +1,5 @@
 from django.db.models.signals import post_save  # post_save is a signal that is called after a model.save() is called...
-from django.dispatch import receiver            #This is the reciever that will catch the signal?
+from django.dispatch import receiver            #This is the reciever decorator that is used to connect the reciever function to the signal..
 from django.contrib.auth.models import User     #The user
 from .models import Profile                     #The Profile
 

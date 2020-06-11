@@ -6,7 +6,7 @@ from django.apps import AppConfig
 class BlogConfig(AppConfig):    
     name = 'blog'
     
-    #connecting the signals..
+    #connecting the signals.. Since we are using the `reciever` decorator we need to import the signals in the ready function of the config..
     def ready(self):
         import users.signals
 
