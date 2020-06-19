@@ -692,10 +692,269 @@ Enabling the user to edit their profiles:
         <in blog/templates/blog/home.html>
             1. add  `<img class = "rounded-circle article-img" src="{{ post.author.profile.image.url}}">` just below the `article` tag        
                     
+Adding the posts to the homepage of the user
+    Using class based views:
+        Django has several generic views
+        We'll be using `ListView`
+        1.Creating the class `PostListView`
+            <in blog/views.py>
+                1. `from django.views.generic import ListView`
+                2. Create the class :
+                        ```
+                            class PostListView(ListView):
+                                model = Post                                #The model that will be used    
+                                template_name = "blog/home.html"            #telling it where to look for our template
+                                context_object_name = 'posts'
+                                ordering = ['-date_posted']                 #Changing the order in which the posts are displayed newestToOldest
+                        ```
+                Info:
+                    1. Here PostListView is  a user defined class inheriting from the `ListView` which is (one of many) generic view(s) in django
+                    2. Every generic view has a model variable which must be set to the model that the view will be interacting  with (querying)
+                    3. In order to return a view from the this class based view we must use `<className>.as_view()` method 
+                    4. Every generic class-based "looks"  for a template of a specific name by default 
+                        Pattern for the template that django looks for :  `<app>/<model>_<viewtype>.html`
+                        Of course we can change the template that it should look for using the `$template_name` 
+                            within the class definition : set `template_name = <your template file path>`
 
+                    5. By default the data from the database is contained  in a dictionary under the key `objectList` 
+                        This can be changed to any other name by using the `context_object_name = <yourVarName>`
+                    6. An `ordering` attribute can be added to the content based on a particular `key` to order the content based on the key
+                        Here `['-date_posted']` the `-(minus sign)` before the key value is to reverse the order    
 
-
+                            
+        2. Setting the app to use this view instead of the function based views that we created earlier
+            <in blog/urls.py>
+                1. import the `PostListView`:
+                    add `from .views import PostListView` 
+                2. replace the `views.home` to `PostListView.as_view()`
         
+        3. Adding the ablility to view individual posts
+            1. Creating The views.. (class-based)(also sticking to the django conventions)
+                <in blog/views.py>
+                    1. `from  django.views.generic import DetailView`
+                    2. Create the class `PostDetailView` inheriting the `DetailView`
+                    3. The class:
+                        ```
+                            class PostDetailView(DetailView):
+                                model = Post
+
+                        ```
+            2. Setting the appropriate url:
+                <blog/urls.py>
+                    1. import the `PostDetailView` 
+                        add `from .views import PostDetailView`
+                    2. add `path('post/<int:pk>',PostDetailView.as_view(),name ='post-detail')`
+                        
+                    Info: 
+                        1. Here the <int:pk> specifies that grab the object by the primaryKey which is int datatype of the model and use that to select the model
+                        2. Since we didn't specify the primaryKey by default it is created under the column `id`
+            3. Creating the template :
+                1. Create a new file "blog/post_detail.html"            (remember the convention `<app>/<model>_<viewtype>.html`)
+                2. <in "blog/post_detail.html" >
+                    1. add the following code:
+                        ```
+                            {% extends "blog/base.html" %}
+                            {% block content %}
+                                <article class="media content-section">
+                                    <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
+                                    <div class="media-body">
+                                        <div class="article-metadata">
+                                            <a class="mr-2" href="#">{{ object.author }}</a>
+                                            <small class="text-muted">{{ object.date_objected|date:"M d, Y" }}</small>
+                                        </div>
+                                        <h2 class="article-title" >{{ object.title }}</h2>
+                                        <p class="article-content">{{ object.content }}</p>
+                                    </div>
+                                </article>
+                            {% endblock content %}
+                        ```
+                    Info :
+                        1. Notice that we use the var name `object` to access the object passed this is the django convention
+            4. Linking the page from the homepage :
+                <in home.html>
+                    1. under the `h2` with `class="article-title" change the `href` from `"#"` to `"{% url 'post_detail'` Like this:
+                         `<h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>`
+                        Info:
+                            1. we named (in `"blog/urls.py"`) the url pointing to the  `"blog/template/blog/post_detail.html"` template file to `"post-detail"`
+                            2. There we  replace the `<int:pk>` with our primaryKey `post.id`
+        4. Adding the ability to Create new Posts:
+            1. Creating the Views (using generic `CreateView`)
+                <in "blog/views.py"
+                    ```
+                        class PostCreateView(CreateView):
+                            model = Post
+                            fields =['title','content']                             #we'll be editing the following fields while creating the model
+                    ```
+            2. Creating the urls path:
+                <in 'blog/urls/.py'>
+                    1. import the `PostCreateView`
+                    2. add a new path:
+                        `path('post/new/',PostCreateView.as_view(),name = 'post-create')`
+            3. Creating the template:
+                1. create a blog template file `"post_form.html"`
+                <in blog/templates/blog/post_form.html dir>
+                    1. Insert this code:
+                        ```
+                            {% extends "blog/base.html" %}                                          
+                            {% load crispy_forms_tags %}
+                            {% block content %}
+                                <div class = "content-section">
+                                    <form method="POST">
+                                        <!-- csrf_token -->
+                                        {% csrf_token %}
+                                        <!-- Now the fieldset to group the elements together -->
+                                        <fieldset class="form-group">
+                                            <legend class = "border-bottom mb-4">Blog Post</legend>
+                                            {{ form|crispy }}
+                                        </fieldset>
+                                        <div class="form-group">
+                                            <button type="submit" class="btn btn-outline-info">
+                                                Post
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                
+                            {% endblock content %}
+                        ```
+                        Code Explained:
+                            1. Template inheritance pointing to the base template
+                            2. Loading the `crispy_forms` application 
+                            3. The block content that will be replaced with the data
+                        
+
+                    Info:
+                        1. django expects the name to be `post_form.html` instead of `post_create.html` this is because this template is shared with `UpdateViews`
+                        2. The key where the data is stored is `"form"`  
+            4. Overriding the `formValid` method    
+                    <in blog/views>
+                        1. In `PostCreateView` class
+                            1. add Code:
+                                ```
+                                    def form_valid(self,form):
+                                        form.instance.author = self.request.user    #add the author as this user
+                                        return  super().form_valid(form)            #validate the form
+                                ```
+                        Info:
+                            1. `form_valid` method is used to validate the from
+                            2. Here we are overriding this method(cuz this class is a inherited class ) with our own function that adds the author 
+                            3. Then return the original(the one defined in the `CreateView` (parent) class) `form_valid` method
+                            4. After the form is validated it actually tries to redirect to a `url_success`
+                            5. But in the `CreateView` and `UpdateView` it simply uses the `get_absolute_url` method on the model
+                            6. If you want you can create a var `success_url` in the class attribute and this is where it will redirect after creating the post (you have to use `reverse_lazy method`)
+                            7. Thus we need to Create a `get_absolute_url` method for our Post class
+
+                2. Creating the `get_absolute_url` method for the `Post` model
+                    <in blog/models.py>
+                        In the `Post` class 
+                            1. import the `reverse` function from `django.urls` 
+                            2. add a method `get_absolute_url` Code:
+                                ```
+                                    def get_absolute_url(self):
+                                    return reverse('post-detail',kwargs = {'pk':self.pk})
+                                ```
+                        Info:
+                            1. We are using the `reverse` instead of `redirect` This simply returns the full path to the link as a string rather than actually redirecting it 
+                            2. The redirecting will be handled by the `forms_valid` method in the `CreateView` class that we created earlier
+                            3. `"post-detail"` is the name of the url 
+                            4. remember the url expects a kwarg `"<int:pk>"` so we pass it as kwargs and value is the `self.pk` which is the primaryKey of the model (here `id`)
+            5. Create posts only on login:
+                <in blog/views.py>
+                    1. import the `LoginRequiredMixin` from `django.attrib.auth.mixins`
+                    2. inherit this class first before other classes (here `CreateView`) in the `PostCreateView` 
+                Info:
+                    1. for function based views we used the `@login_required` decorator 
+                    2. But for class based views we can do the same by inheriting from `mixins`
+        5. Update existing posts:
+            1. creating the view:
+                <in blog/views>
+                    1. import the `UpdateView` from `django.views.generic`
+                    2. create the class similar to the `PostCreateView` class
+                    3. replace the class name to `PostUpdateView`
+                    4. change the inherted class `CreateView` to UpdateView
+                    Done!
+            2. Adding the url route 
+                <in blog/urls.py>
+                    1. import the `PostUpdateView`  from `.views` 
+                    2. add the following `path('post/<int:pk>/update/',PostUpdateView.as_view(),name = 'post-update'),   `
+                Info:
+                    1. Notice the url path 
+            3. Make sure only the author of the post can edit it
+                If you actually login you can edit posts created by other users .We don't want this
+                1. import the `UserPassesTestMixin` from   `django.contrib.auth.mixins`
+                2. inherit the `UserPassesTestMixin` class in the `PostUpdateView`  before the  `UpdateView`
+                3. override the `test_func` 
+                    ```
+                        def test_func(self):
+                            post =  self.get_object()                       #get the post as an object
+                            return  self.request.user == post.author        #make sure the requested user matches the posts.author
+
+                    ```
+        6. Delete Posts:
+            1. Creating the view:
+                <in urls/views.py>
+                    1. Create the `PostDeleteView`  class 
+                        ```
+                            class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin,DetailView):
+                                model = Post 
+                                def test_func(self):
+                                    post =  self.get_object()
+                                    return  self.request.user == post.author
+                                
+
+                        ```
+            2. Addind the url path
+                <in blog/urls.py>
+                    1. `path('post/<int:pk>/delete/',PostDeleteView.as_view(),name = 'post-delete')`
+            3. Creating the confirm delete form
+                Create a template file "post_confirm_delete.html" 
+                <in blog/templates/blog/post_confirm_delete.html>
+                    1. Paste the following 
+                        ```
+                                {% extends "blog/base.html" %}
+                                {% block content %}
+                                    <div class = "content-section">
+                                        <form method="POST">
+                                            {% csrf_token %}
+                                            <fieldset class="form-group">
+                                                <legend class = "border-bottom mb-4">Delete Post</legend>
+                                                <h2 >Are You sure you want to delete the Post "{{object.title}}"</h2>
+                                            </fieldset>
+                                            <div class="form-group">
+                                                <button type="submit" class="btn btn-outline-danger">
+                                                    Yes,Delete!
+                                                </button>
+                                                <a class  = 'btn btn-outline-secondary' href = "{% 'post-detail' `object.id
+                4.  %}">Cancel</a> (using classed based views this is what django gives the var name to be accessible in the template (`object`) for a `DetailView`
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                {% endblock content %}
+
+                        ```
+                    Info:
+        7. Linking it all up:
+            <in blog/templates/blog/base.html>
+                1. Add an `a` tag pointing to the `"post-create"` link  just below the `{% if user.is_authenticated %}` line (in the navigation bar)
+                    `<a class="nav-item nav-link" href="{% url 'post-create' %}">New Post</a>` 
+            <in blog/templates/blog/post_detail.html>
+                1. add The following  at the end of `div` with `class = 'article-metadata'`
+                    ```
+                        {% if object.author == user %}
+                            <div>
+                                <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' object.id %}">Update</a>
+                                <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' object.id %}">Delete</a>
+                            </div>
+                        {% end if %}
+                    ```
+                Info :
+                    1. if the user is same as the author of the post show update 
+                    2. The bootstrap class:
+                        for Logout: a button , secondary-button , small-button , top-margin:1,bottom-margin-1
+                        for Delete: a button , button-danger , small-button , top-margin:1,bottom-margin-1
+                    3. url `"post-update"` which expects a `pk`  that is stored in `object.id` 
+                    4. using classed based views this is what django gives the var name to be accessible in the template (`object`) for a `DetailView`
 
 Note on Django signals...
     
@@ -729,14 +988,25 @@ Note on Django signals...
                     you must import the signals submodule under the `ready()` method of `<appName>Config` class located in the `"<appName>/apps.py"` file
 
 
+Note on Generi class based views
+    list of views:
+        1. ListView #use
 
 
 
 
-
-# Bonus : Creating a remote github repo using github-api
-    1. to create a github remote repo use `curl -u "<username>:pass" https://api.github.com/user/repos/ -d '{"name" = "<project-name>",<Other optional params>}'
-
+# Bonus : 
+    1. Creating a remote github repo using github-api
+        to create a github remote repo use `curl -u "<username>:pass" https://api.github.com/user/repos/ -d '{"name" = "<project-name>",<Other optional params>}'
+    2. Split up multiple imports using `()` 
+        eg:
+            ```
+                from foo import (
+                    bar1,
+                    bar2,
+                    bar3
+                )
+            ```
 
 
 ///An example for data (passing data to templates)

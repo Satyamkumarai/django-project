@@ -1,16 +1,30 @@
 from django.shortcuts import render
 
-from django.http import HttpResponse  #to send back the response
+from django.http import HttpResponse  # to send back the response
 
-#~~~~Sending Basic Response~~~~~
+from .models import Post  # from current dir
+
+# Generic views Class based
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView
+)
+
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+
+# ~~~~Sending Basic Response~~~~~
 
 # def home(request):                      # this is the function that handles the request when routed to url pointed by urls.py
 #     return HttpResponse("<h1>Blog HomePage</H1>")
 # def about(req):
 #     return HttpResponse("""<h1><center>About</center></h1>This is a simple blog post""")
 
-#This is just an example data of what data you may want to use to fill the template
-#this could be a result from a daatabase query for example
+# This is just an example data of what data you may want to use to fill the template
+# this could be a result from a daatabase query for example
 # posts = [
 
 #     {
@@ -39,9 +53,7 @@ from django.http import HttpResponse  #to send back the response
 # ]
 
 
-
-
-#~~~~~ using Templates~~~~
+# ~~~~~ using Templates~~~~
 
 # def home(request):
 #     return render(request,"blog/home.html")  #render the template defined in templates/blog/home.html and then return that as the response
@@ -49,7 +61,7 @@ from django.http import HttpResponse  #to send back the response
 #     return render(req,"blog/about.html")
 
 
-#~~~~~PAssing Data to templates ~~~~
+# ~~~~~PAssing Data to templates ~~~~
 
 # def home(request):
 #     context = {"posts":posts}
@@ -58,14 +70,66 @@ from django.http import HttpResponse  #to send back the response
 #     return render(req,"blog/about.html",{"title":"About"})  #passing in title
 
 
+# ~~~~~Querying from DB~~~~~~
 
 
-#~~~~~Querying from DB~~~~~~
-
-
-from .models import Post  #from current dir
 def home(request):
-    context = {"posts":Post.objects.all()}
-    return render(request,"blog/home.html",context)  #this will pass the context to the template and all it's content will be acessible in the template
+    context = {"posts": Post.objects.all()}
+    return render(
+        request, "blog/home.html", context
+    )  # this will pass the context to the template and all it's content will be acessible in the template
+
+
+# class based view
+class PostListView(ListView):
+    model = Post
+    template_name = "blog/home.html"  ##What model that   we need to query
+    context_object_name = "posts"
+    ordering = ["-date_posted"]
+
+
+# class based view to display each post
+class PostDetailView(DetailView):
+    model = Post
+
+
+# class based view to create new post
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    fields = [
+        "title",
+        "content",
+    ]  # we'll be editing the following fields while creating the model
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user  # add the author as this user
+        return super().form_valid(form)  # validate the form
+
+
+# class to update existing posts
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Post
+    fields = [
+        "title",
+        "content",
+    ]  # we'll be editing the following fields while creating the model
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user  # add the author as this user
+        return super().form_valid(form)  # validate the form
+    def test_func(self):
+        post =  self.get_object()
+        return  self.request.user == post.author
+
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin,DeleteView):
+    model = Post 
+    success_url = '/'
+    def test_func(self):
+        post =  self.get_object()
+        return  self.request.user == post.author
+
+
+
 def about(req):
-    return render(req,"blog/about.html",{"title":"About"})  #passing in title
+    return render(req, "blog/about.html", {"title": "About"})  # passing in title
