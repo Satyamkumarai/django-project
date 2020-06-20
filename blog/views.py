@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render ,get_object_or_404  
 
 from django.http import HttpResponse  # to send back the response
 
@@ -15,6 +15,7 @@ from django.views.generic import (
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
+from django.contrib.auth.models import User
 
 # ~~~~Sending Basic Response~~~~~
 
@@ -73,63 +74,100 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 # ~~~~~Querying from DB~~~~~~
 
 
+
+
+#-------------------------------------------------------------------------
 def home(request):
     context = {"posts": Post.objects.all()}
-    return render(
-        request, "blog/home.html", context
-    )  # this will pass the context to the template and all it's content will be acessible in the template
+    return render(request, "blog/home.html", context)                               # this will pass the context to the template and all it's content will be acessible in the template
+#-------------------------------------------------------------------------
 
+#--------------------CLASS - BASED  -  VIEWS------------------------------
 
-# class based view
+# class based view For listing the posts on the homepage
+#-------------------------------------------------------------------------
 class PostListView(ListView):
     model = Post
-    template_name = "blog/home.html"  ##What model that   we need to query
+    template_name = "blog/home.html"                                                ##What model that   we need to query
     context_object_name = "posts"
     ordering = ["-date_posted"]
+    paginate_by = 5 
+#-------------------------------------------------------------------------
+
+
+
+
+#this will be used to view the  posts filteresd by users.
+#-------------------------------------------------------------------------
+class UserPostListView(ListView):
+    model = Post
+    template_name = "blog/user_posts.html"                                          ##What model that   we need to query
+    context_object_name = "posts"
+    paginate_by = 5 
+
+    def get_queryset(self):                                                         #we are overriding this method so that we can return our own queryset
+        user =  get_object_or_404( User , username= self.kwargs.get('username'))
+        return  Post.objects.filter(author = user).order_by('-date_posted')
+#-------------------------------------------------------------------------
+
+
 
 
 # class based view to display each post
+#-------------------------------------------------------------------------
 class PostDetailView(DetailView):
     model = Post
+#-------------------------------------------------------------------------
+
+
+
 
 
 # class based view to create new post
+#-------------------------------------------------------------------------
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = [
-        "title",
-        "content",
-    ]  # we'll be editing the following fields while creating the model
+    fields = ["title","content",]                                                    # We'll be editing the following fields while creating the model
 
     def form_valid(self, form):
-        form.instance.author = self.request.user  # add the author as this user
-        return super().form_valid(form)  # validate the form
+        form.instance.author = self.request.user                                     # add the author as this user
+        return super().form_valid(form)                                              # validate the form
+#-------------------------------------------------------------------------
+
+
 
 
 # class to update existing posts
+#-------------------------------------------------------------------------
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    
     model = Post
-    fields = [
-        "title",
-        "content",
-    ]  # we'll be editing the following fields while creating the model
+    fields = ["title","content",]                                                   # we'll be editing the following fields while creating the model
 
     def form_valid(self, form):
-        form.instance.author = self.request.user  # add the author as this user
-        return super().form_valid(form)  # validate the form
+        form.instance.author = self.request.user                                    # add the author as this user
+        return super().form_valid(form)                                             # validate the form
+    
     def test_func(self):
         post =  self.get_object()
         return  self.request.user == post.author
+#-------------------------------------------------------------------------
 
 
+
+
+#-------------------------------------------------------------------------
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin,DeleteView):
     model = Post 
     success_url = '/'
     def test_func(self):
         post =  self.get_object()
         return  self.request.user == post.author
+#-------------------------------------------------------------------------
 
 
 
+#-------------------------------------------------------------------------
 def about(req):
     return render(req, "blog/about.html", {"title": "About"})  # passing in title
+#-------------------------------------------------------------------------
