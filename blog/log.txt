@@ -1109,8 +1109,143 @@ Filter posts by user :
             2. <in post_detail.html>
                 replace the `"#"` sign  to `"{%url 'user-posts' object.author.username %}"` Like this  in post.author link
                     `<a class="mr-2" href="{%url 'user-posts' object.author.username %}">{{ object.author }}</a>`
-                
-                
+Adding the password-Reset functionality:
+    PreInfo:
+        We'll bw using the builting views for reset password..
+        These are located in the `django.contrib.auth.auth_views` 
+        Theser are as follows:
+            1. `PasswordResetView`
+            2. `PasswordResetConfirmView`
+            3. `PasswordResetDoneView`
+            4. `PasswordResetCompleteView`
+        Following is the order in which these occur
+            1. you press "forgot password" you get the `PasswordResetView` (i mean the template that this view renders)  (i'm just using the views to show the order i should've probably used the urls )
+            2. Then if You entr the correct email  you get the `PasswordResetDoneView`
+            3. Then you get the email .. if you click the link in the email  you get the `PasswordResetConfirmView`
+            4. Once all this is completed you get the `PasswordResetCompleteView`
+
+    1. Creating the password-reset page:
+        1. Creating the Url route of the password-Reset 
+            <in urls.py>
+                1. add  the follwing:
+                    `path("password-reset/",auth_views.PasswordResetView.as_view(template_name = "users/password_reset.html"),name = "password_reset" ),`
+        2.  Adding the template:
+            1. Create a template  file `"users/password_reset.html"`
+            2. <in users/password_reset.html>
+                1. add the following 
+                    ```
+                        {% extends "blog/base.html" %}
+                        {% load crispy_forms_tags %}
+                        {% block content %}
+                            <div class = "content-section">
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <fieldset class="form-group">
+                                        <legend class = "border-bottom mb-4">Reset Password</legend>
+                                        {{ form|crispy }}
+                                    </fieldset>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-outline-info">
+                                            Request Password Reset
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                        {% endblock content %}
+                    ```
+    2. Creating the password-Reset-Done page:                
+        1. Creating the Url route:
+            <in urls.py>
+                1. add  the follwing:
+                    `path("password-reset/done/",auth_views.PasswordResetDoneView.as_view(template_name = "users/password_reset_done.html"),name = "password_reset_done" ),`
+
+        2. Creating the template :
+            1. Create a template file `"users/password_reset_done.html"`
+            2. <in users/password_reset_done.html>
+                1. Paste this:
+                    ```
+                        {% extends "blog/base.html" %}
+                        {% load crispy_forms_tags %}
+                        {% block content %}
+                            <div class="alert alert-info">
+                                Your email has been sent with instructions to reset the password
+                            </div>
+                        {% endblock content %}
+                    ```
+    3. Creating the password-reset-confirm page:
+        1. Creating the Url route:
+            <in urls.py>
+                1. add  the follwing:
+                    `path("password-reset-confirm/<uidb64>/<token>",auth_views.PasswordResetConfirmView.as_view(template_name = "users/password_reset_confirm.html"),name = "password_reset_confirm" ),`
+        2. Creating the template :
+            1. Create a template file `"users/password_reset_confirm.html"`
+            2. < in users/password_reset_confirm.html>
+                1. Paste the following:
+                    ```
+                        {% extends "blog/base.html" %}
+                        {% load crispy_forms_tags %}
+                        {% block content %}
+                            <div class = "content-section">
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <fieldset class="form-group">
+                                        <legend class = "border-bottom mb-4">Reset Password</legend>
+                                        {{ form|crispy }}
+                                    </fieldset>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-outline-info">
+                                            Reset Password 
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endblock content %}
+                    ```
+    4. Creating the password-reset-complete page:
+        1. Creating the Url route:
+            <in urls.py>
+                1. add  the follwing:
+                    `path("password-reset/done/",auth_views.PasswordResetDoneView.as_view(template_name = "users/password_reset_done.html"),name = "password_reset_done" ),`
+        2. Creating the template :
+            1. Create a template file `"users/password_reset_completed.html"`
+            2. < in users/password_reset_completed.html>
+                1. Paste the following:
+                    ```
+                        {% extends "blog/base.html" %}
+                        {% block content %}
+                            <div class="alert alert-info">
+                                Your Password has been set 
+                            </div>
+                            <a href = '{% url "login" %}'>Sign in Here</a>
+                            
+                        {% endblock content %}
+                    ```
+    5. Finally Modifying the Settings to send the mail:
+        1. <in settings.py >
+                1. Add the following :
+                    ```
+                        EMAIL_BACKEND  = "django.core.mail.backends.smtp.EmailBackend"
+                        EMAIL_HOST = 'smtp.gmail.com'
+                        EMAIL_PORT = 587
+                        EMAIL_USE_TLS = True
+                        EMAIL_HOST_USER = os.environ.get("USER_EMAIL")
+                        EMAIL_HOST_PASSWORD = os.environ.get("USER_PASS")
+                        print(EMAIL_HOST_USER)
+                    ```
+        2. Creating The env variable:
+            For all this to work you'll need a google app password
+            1. get the google app password (simply search for "google app password") 
+            2. copy your google app password into  environment variables..
+                1. Create a environment variable named `"USER_EMAIL"` and paste in the gmail that you'll use to signin and send the email
+                2. Create another envrionment variable named "USER_PASS" and paste your google app password
+            Info:
+                1. This is the account that will be used to send the emails to the password reset links
+                2. Your personal mail is not recommended if you are to deploy your app for others..
+    Info:
+        1. Here we are using the gmail to send a password reset link to you email id.
+
+            
 Note on Django signals...
     
     Docs: https://docs.djangoproject.com/en/3.0/topics/signals/
